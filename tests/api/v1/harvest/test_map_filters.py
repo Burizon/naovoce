@@ -83,3 +83,7 @@ def test_harvest_calendar(client, truncate_table, seasonal_kind, new_fruit, repo
     assert cherry["ripe_reports_by_month"] == [0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]
     assert [row["kind"] for row in local] == [cherry_kind.key]
     assert local[0]["count"] == 1
+
+    zoomed_out = client.get(reverse("api:harvest-calendar"), {"bbox": "-250,-95,260,95"})
+    assert zoomed_out.status_code == status.HTTP_200_OK
+    assert client.get(reverse("api:harvest-calendar"), {"bbox": "14,50,13,51"}).status_code == 400

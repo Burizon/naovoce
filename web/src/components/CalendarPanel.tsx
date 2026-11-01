@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { type Bbox, type CalendarRow, api } from "../api.ts";
-import { MONTHS, MONTHS_SHORT, harvestInMonth, kindColor, typicalMonths } from "../seasons.ts";
+import { MONTHS, MONTHS_SHORT, harvestInMonth, kindColor, places, typicalMonths } from "../seasons.ts";
 
 interface Props {
   bbox: Bbox | null;
@@ -67,7 +67,7 @@ export function CalendarPanel({ bbox, months, month, onMonth }: Props) {
                 <li key={row.kind}>
                   <span className="kind-dot" style={{ background: kindColor(row.col) }} />
                   <span className="month-list-name">
-                    {row.name} <span className="muted small">{row.count} míst</span>
+                    {row.name} <span className="muted small">{places(row.count)}</span>
                   </span>
                   <span className="tags">
                     {typical ? (

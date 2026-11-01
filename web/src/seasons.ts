@@ -117,3 +117,11 @@ export function defaultMonth(months: readonly number[], today: Date = new Date()
   const current = today.getMonth() + 1;
   return months.find((month) => month >= current) ?? months[0] ?? null;
 }
+
+/** Czech plural: plural(1, "místo", "místa", "míst") → "1 místo". */
+export function plural(count: number, one: string, few: string, many: string): string {
+  const word = count === 1 ? one : count >= 2 && count <= 4 ? few : many;
+  return `${count.toLocaleString("cs-CZ")} ${word}`;
+}
+
+export const places = (count: number): string => plural(count, "místo", "místa", "míst");

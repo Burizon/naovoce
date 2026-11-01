@@ -7,6 +7,8 @@ import {
   describeStart,
   describeTypical,
   harvestInMonth,
+  places,
+  plural,
   shortDate,
   typicalMonths,
 } from "./seasons.ts";
@@ -74,5 +76,19 @@ describe("calendar months", () => {
     expect(defaultMonth([5, 6, 7, 10, 11], new Date(2026, 9, 3))).toBe(10);
     expect(defaultMonth([5, 6, 7, 10, 11], new Date(2026, 7, 3))).toBe(10);
     expect(defaultMonth([5, 6, 7, 10, 11], new Date(2026, 11, 3))).toBe(5);
+  });
+});
+
+describe("Czech plurals", () => {
+  test("places and kinds", () => {
+    expect([1, 2, 4, 5, 0, 1300].map(places)).toEqual([
+      "1 místo",
+      "2 místa",
+      "4 místa",
+      "5 míst",
+      "0 míst",
+      "1\u00a0300 míst",
+    ]);
+    expect(plural(3, "plodina", "plodiny", "plodin")).toBe("3 plodiny");
   });
 });

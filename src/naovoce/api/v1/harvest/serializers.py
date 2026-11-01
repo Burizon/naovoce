@@ -11,8 +11,13 @@ MAX_REPORT_AGE_DAYS = 60
 
 
 def bbox_polygon(west, south, east, north):
-    """Validated polygon of a [west, south, east, north] bounding box in WGS 84 degrees."""
-    if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
+    """Polygon of a [west, south, east, north] bounding box in WGS 84 degrees.
+
+    A zoomed-out map reports longitudes beyond ±180° (the world repeats); they are clamped.
+    """
+    west, east = max(west, -180.0), min(east, 180.0)
+    south, north = max(south, -90.0), min(north, 90.0)
+    if not (west < east and south < north):
         raise serializers.ValidationError(_("Bounding box must be [west, south, east, north]."))
     return Polygon.from_bbox((west, south, east, north))
 

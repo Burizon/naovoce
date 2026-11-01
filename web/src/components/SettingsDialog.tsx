@@ -8,7 +8,7 @@ import {
   type Session,
   api,
 } from "../api.ts";
-import { kindColor } from "../seasons.ts";
+import { kindColor, plural } from "../seasons.ts";
 
 interface Props {
   session: Session;
@@ -111,7 +111,7 @@ export function SettingsDialog({ session, kinds, bbox, onClose }: Props) {
               <p className="muted small">
                 {form.kinds.length === 0
                   ? "Nic nevybráno: posíláme zprávy o všech plodinách."
-                  : `Vybráno ${form.kinds.length} plodin.`}
+                  : `Vybráno: ${plural(form.kinds.length, "plodina", "plodiny", "plodin")}.`}
               </p>
               <ul className="plain kind-checklist">
                 {allKinds.map((kind) => (

@@ -203,7 +203,11 @@ function query(params: Record<string, string | number | undefined | null | false
   return text ? `?${text}` : "";
 }
 
-export const bboxParam = (bbox: Bbox): string => bbox.map((value) => value.toFixed(5)).join(",");
+/** A zoomed-out map reports longitudes beyond ±180° (the world repeats); clamp them. */
+export function bboxParam([west, south, east, north]: Bbox): string {
+  const clamped = [Math.max(west, -180), Math.max(south, -90), Math.min(east, 180), Math.min(north, 90)];
+  return clamped.map((value) => value.toFixed(5)).join(",");
+}
 
 export const api = {
   kinds: () => request<Kind[]>("/fruit/kinds/"),

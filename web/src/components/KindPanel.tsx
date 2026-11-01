@@ -1,6 +1,5 @@
 import type { Kind } from "../api.ts";
-import { MONTHS } from "../seasons.ts";
-import { kindColor } from "../seasons.ts";
+import { MONTHS, kindColor, places } from "../seasons.ts";
 
 interface Props {
   tiles: Kind[];
@@ -30,7 +29,7 @@ export function KindPanel({ tiles, counts, total, selected, month, ripeOnly, sea
           měsíc.
         </p>
         <p className="count">
-          <strong>{total.toLocaleString("cs-CZ")}</strong> míst {scope}
+          <strong>{places(total)}</strong> {scope}
         </p>
       </section>
 
@@ -51,7 +50,7 @@ export function KindPanel({ tiles, counts, total, selected, month, ripeOnly, sea
                   <span className="kind-icon" style={{ background: kindColor(kind.col) }} aria-hidden="true" />
                   <span className="kind-text">
                     <strong>{kind.name}</strong>
-                    <span className="muted small">{(counts.get(kind.key) ?? 0).toLocaleString("cs-CZ")} míst</span>
+                    <span className="muted small">{places(counts.get(kind.key) ?? 0)}</span>
                   </span>
                 </button>
               </li>

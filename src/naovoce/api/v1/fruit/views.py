@@ -8,11 +8,12 @@ from django.utils.translation import ugettext_lazy as _
 from ipware.ip import get_client_ip
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from fruit.models import Fruit, Kind
+from harvest import services as harvest_services
 
 from ..comments.serializers import CommentSerializer
 from ..permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
@@ -70,6 +71,13 @@ class FruitList(generics.ListCreateAPIView):
         if kind := request.query_params.get("kind"):
             qs = qs.filter(kind__key=kind)
 
+        if month := request.query_params.get("month"):
+            month = self.parse_month(month)
+            qs = harvest_services.filter_in_month(qs, month)
+
+        if ripe := request.query_params.get("ripe", "").lower() in ("1", "true", "yes"):
+            qs = harvest_services.filter_reported_ripe(qs)
+
         if (page := self.paginate_queryset(qs)) is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
@@ -77,12 +85,21 @@ class FruitList(generics.ListCreateAPIView):
         # We are not paginating, so we can serialize iterator (saves memory)
         serializer = self.get_serializer(qs.iterator(), many=True)
 
-        if not (user or catalogue):
-            # Caching all combinations of kind & user
-            # would produce too many cache entries.
+        if not (user or catalogue or ripe or month):
+            # Caching all combinations of kind & user would produce too many cache entries;
+            # harvest filters depend on ripeness reports that change every day.
             return CachedResponse(kind or "all", serializer.data)
 
         return Response(serializer.data)
+
+    @staticmethod
+    def parse_month(value):
+        """Month 1–12, or `now` for the current month."""
+        if value == "now":
+            return harvest_services.today().month
+        if value.isdigit() and 1 <= int(value) <= 12:
+            return int(value)
+        raise ValidationError({"month": _("Month must be a number 1–12 or 'now'.")})
 
     def get_serializer_class(self):
         if self.request.method in permissions.SAFE_METHODS:

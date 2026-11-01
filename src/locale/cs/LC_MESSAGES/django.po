@@ -1362,9 +1362,6 @@ msgstr "Čtěte více"
 #~ msgid "html text"
 #~ msgstr "html text"
 
-#~ msgid "sent"
-#~ msgstr "odesláno"
-
 #~ msgid "subscriber lists"
 #~ msgstr "seznamy odběratelů"
 
@@ -1503,9 +1500,6 @@ msgstr "Čtěte více"
 
 #~ msgid "Categories"
 #~ msgstr "Kategorie"
-
-#~ msgid "all"
-#~ msgstr "vše"
 
 #~ msgid "Large map"
 #~ msgstr "Velká mapa"
@@ -1867,3 +1861,161 @@ msgstr "Čtěte více"
 
 #~ msgid "log in"
 #~ msgstr "přihlásit"
+
+#: harvest/models.py
+msgid "not ripe yet"
+msgstr "ještě nezralé"
+
+#: harvest/models.py
+msgid "ripe"
+msgstr "zralé"
+
+#: harvest/models.py
+msgid "season over"
+msgstr "po sezóně"
+
+#: harvest/models.py
+msgid "ripeness"
+msgstr "zralost"
+
+#: harvest/models.py
+msgid "observed on"
+msgstr "pozorováno dne"
+
+#: harvest/models.py
+msgid "note"
+msgstr "poznámka"
+
+#: harvest/models.py
+msgid "ripeness report"
+msgstr "hlášení zralosti"
+
+#: harvest/models.py
+msgid "ripeness reports"
+msgstr "hlášení zralosti"
+
+
+
+
+
+#: harvest/models.py
+msgid "notify by e-mail"
+msgstr "upozornit e-mailem"
+
+
+
+
+
+
+
+
+#: harvest/admin.py
+msgid "all"
+msgstr "všechny"
+
+
+
+#: naovoce/api/v1/harvest/serializers.py
+msgid "Bounding box must be [west, south, east, north]."
+msgstr "Oblast musí být zadaná jako [západ, jih, východ, sever]."
+
+
+#: naovoce/api/v1/harvest/serializers.py
+msgid "Ripeness cannot be reported for a future day."
+msgstr "Zralost nelze nahlásit na budoucí den."
+
+#: naovoce/api/v1/harvest/serializers.py
+msgid "Ripeness can be reported at most {days} days back."
+msgstr "Zralost lze nahlásit nejvýše {days} dní zpětně."
+
+#: naovoce/api/v1/harvest/views.py
+msgid "Bounding box must be four numbers: west,south,east,north."
+msgstr "Oblast musí být čtyři čísla: západ,jih,východ,sever."
+
+#: naovoce/api/v1/harvest/views.py
+msgid "This parameter is required."
+msgstr "Tento parametr je povinný."
+
+#: naovoce/api/v1/fruit/views.py
+msgid "Month must be a number 1–12 or 'now'."
+msgstr "Měsíc musí být číslo 1–12 nebo 'now'."
+
+#: harvest/models.py
+msgid "Leave empty to follow all kinds."
+msgstr "Ponechte prázdné, chcete-li sledovat všechny plodiny."
+
+#: harvest/models.py
+msgid "two weeks ahead"
+msgstr "14 dní předem"
+
+#: harvest/models.py
+msgid "a month ahead"
+msgstr "měsíc předem"
+
+#: harvest/models.py
+msgid "two months ahead"
+msgstr "dva měsíce předem"
+
+#: harvest/models.py
+msgid "every week"
+msgstr "každý týden"
+
+#: harvest/models.py
+msgid "every 14 days"
+msgstr "každých 14 dní"
+
+#: harvest/models.py
+msgid "every month"
+msgstr "každý měsíc"
+
+#: harvest/models.py
+msgid "announce ahead"
+msgstr "upozornit předem"
+
+#: harvest/models.py
+msgid "season news frequency"
+msgstr "jak často posílat sezónní zprávy"
+
+#: harvest/models.py
+msgid "notify in the app"
+msgstr "upozornit v aplikaci"
+
+#: harvest/models.py
+msgid "last season news"
+msgstr "poslední sezónní zprávy"
+
+#: harvest/models.py
+msgid "season watch"
+msgstr "sledování sezón"
+
+#: harvest/models.py
+msgid "season watches"
+msgstr "sledování sezón"
+
+#: harvest/notifications.py
+msgid "Season news"
+msgstr "Sezónní zprávy"
+
+#: harvest/notifications.py
+msgid "Season has just started: {kinds}"
+msgstr "Právě začala sezóna: {kinds}"
+
+#: harvest/notifications.py
+msgid "Starting soon: {kinds}"
+msgstr "Brzy začíná: {kinds}"
+
+#: harvest/notifications.py
+msgid "In season, don't miss it: {kinds}"
+msgstr "Sezóna probíhá, nepropásněte ji: {kinds}"
+
+#: harvest/notifications.py
+msgid "Season ends soon: {kinds}"
+msgstr "Brzy končí: {kinds}"
+
+#: harvest/notifications.py
+msgid "People report ripe: {kinds}"
+msgstr "Lidé hlásí zralé: {kinds}"
+
+#: naovoce/api/v1/harvest/views.py
+msgid "Days ahead must be a number 0–90."
+msgstr "Počet dní předem musí být číslo 0–90."

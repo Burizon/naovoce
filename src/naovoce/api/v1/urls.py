@@ -8,6 +8,7 @@ urlpatterns = [
     path("", api_root, name="root"),
     path("fruit/", include("naovoce.api.v1.fruit.urls")),
     path("herbarium/", include("naovoce.api.v1.herbarium.urls")),
+    path("harvest/", include("naovoce.api.v1.harvest.urls")),
     path("users/", include("naovoce.api.v1.users.urls")),
     path("images/", include("naovoce.api.v1.images.urls")),
     path("signup/", include("naovoce.api.v1.signup.urls")),

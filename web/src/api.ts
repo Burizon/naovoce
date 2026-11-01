@@ -105,6 +105,15 @@ export interface HarvestAlert {
 
 export type HarvestAlertInput = Pick<HarvestAlert, "name" | "bbox" | "kinds" | "lead_days" | "via_email">;
 
+export interface Notification {
+  id: number;
+  /** HTML rendered and escaped by the server. */
+  text: string;
+  is_read: boolean;
+  is_system: boolean;
+  created: string;
+}
+
 export interface Session {
   token: string;
   id: number;
@@ -214,6 +223,11 @@ export const api = {
 
   deleteAlert: (id: number, session: Session) =>
     request<void>(`/harvest/alerts/${id}/`, { method: "DELETE" }, session),
+
+  notifications: (session: Session) => request<Notification[]>("/users/me/messages/", {}, session),
+
+  markNotificationsRead: (session: Session) =>
+    request<void>("/users/me/messages/read/", { method: "POST" }, session),
 
   login: async (username: string, password: string): Promise<Session> => {
     const result = await request<{ token: string; id: number }>("/token/", {

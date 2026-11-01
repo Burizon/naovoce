@@ -1,12 +1,14 @@
 import datetime
 
 from django.utils import timezone
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from user.models import FruitUser
 from user.utils import fruit_counter, top_users
 
+from ..permissions import IsAuthenticated
 from . import serializers
 
 
@@ -49,3 +51,27 @@ class UserDetail(generics.RetrieveAPIView):
 
     queryset = FruitUser.objects.annotate(**fruit_counter())
     serializer_class = serializers.VerboseUserSerializer
+
+
+class MyMessages(generics.ListAPIView):
+    """In-app notifications of the current user, newest first; `?unread` lists only unread ones."""
+
+    serializer_class = serializers.MessageSerializer
+    permission_classes = (IsAuthenticated,)
+    pagination_class = None
+
+    def get_queryset(self):
+        messages = self.request.user.messages.all()
+        if self.request.query_params.get("unread") is not None:
+            messages = messages.filter(is_read=False)
+        return messages[:50]
+
+
+class MyMessagesRead(APIView):
+    """Mark all notifications of the current user as read."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        request.user.clear_messages()
+        return Response(status=status.HTTP_204_NO_CONTENT)

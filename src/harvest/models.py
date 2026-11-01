@@ -92,7 +92,8 @@ class HarvestAlert(TimeStampedModel):
         help_text=_("How many days before the expected season start to notify."),
     )
     is_active = models.BooleanField(_("active"), default=True)
-    via_email = models.BooleanField(_("notify by e-mail"), default=True)
+    # In-app notifications are the default channel; e-mail is opt-in.
+    via_email = models.BooleanField(_("notify by e-mail"), default=False)
 
     def is_owner(self, user):
         return self.user == user

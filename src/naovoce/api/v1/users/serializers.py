@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from user.models import FruitUser
+from user.models.message import Message
 
 from ..fruit.fields import HyperlinkedFruitField
 
@@ -47,3 +48,13 @@ class TopUserSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         fields = "id username url fruit_count avatar".split()
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    """In-app notification; `text` is HTML rendered and escaped by the server."""
+
+    text = serializers.CharField(source="text_formatted", read_only=True)
+
+    class Meta:
+        model = Message
+        fields = "id text is_read is_system created".split()

@@ -5,13 +5,13 @@ import { MONTHS, MONTHS_SHORT, describeTypical, kindColor, typicalMonths } from 
 interface Props {
   bbox: Bbox | null;
   month: number | null;
-  selectedKind: string | null;
+  selectedKinds: ReadonlySet<string>;
   onMonth: (month: number) => void;
   onKind: (kind: string) => void;
 }
 
 /** Kinds mapped in the visible area against the twelve months of the year. */
-export function HarvestCalendar({ bbox, month, selectedKind, onMonth, onKind }: Props) {
+export function HarvestCalendar({ bbox, month, selectedKinds, onMonth, onKind }: Props) {
   const [rows, setRows] = useState<CalendarRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const nowMonth = new Date().getMonth() + 1;
@@ -41,8 +41,8 @@ export function HarvestCalendar({ bbox, month, selectedKind, onMonth, onKind }: 
   return (
     <div className="calendar">
       <p className="muted small">
-        Druhy ve výřezu mapy a kdy se sklízí. Plná barva je typická sezóna, tečky ukazují, kdy lidé hlásili zralé plody.
-        Kliknutím na měsíc nebo druh filtrujete mapu.
+        Plodiny ve výřezu mapy a kdy se sklízí. Plná barva je typická sezóna, tečky ukazují, kdy lidé hlásili zralé
+        plody. Kliknutím na měsíc vyberete období sklizně, kliknutím na plodinu ji přidáte do filtru.
       </p>
       <table>
         <thead>
@@ -68,7 +68,7 @@ export function HarvestCalendar({ bbox, month, selectedKind, onMonth, onKind }: 
             const months = typicalMonths(row.typical);
             const color = kindColor(row.col);
             return (
-              <tr key={row.kind} className={row.kind === selectedKind ? "selected" : undefined}>
+              <tr key={row.kind} className={selectedKinds.has(row.kind) ? "selected" : undefined}>
                 <th scope="row" className="kind-col">
                   <button
                     type="button"

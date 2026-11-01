@@ -77,18 +77,24 @@ def send_due_alerts(day=None, dry_run=False):
             notified += 1
             continue
 
-        with transaction.atomic():
-            HarvestAlertDelivery.objects.bulk_create(
-                HarvestAlertDelivery(
-                    alert=alert,
-                    kind=kind,
-                    part=window.part,
-                    season_year=window.start.year,
-                    season_start=window.start,
+        try:
+            with transaction.atomic():
+                HarvestAlertDelivery.objects.bulk_create(
+                    HarvestAlertDelivery(
+                        alert=alert,
+                        kind=kind,
+                        part=window.part,
+                        season_year=window.start.year,
+                        season_start=window.start,
+                    )
+                    for kind, window, _count in due
                 )
-                for kind, window, _count in due
-            )
-            notify(alert, due)
+                notify(alert, due)
+        except Exception:
+            # One failing alert (e.g. an unreachable mail server) must not stop the others;
+            # its deliveries are rolled back, so the next run tries it again.
+            logger.exception(f"Harvest alert {alert.id} could not be sent.")
+            continue
         notified += 1
 
     return notified

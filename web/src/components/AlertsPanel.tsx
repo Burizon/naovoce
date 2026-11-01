@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { type AreaRow, type Bbox, type HarvestAlert, type Kind, type Session, api } from "../api.ts";
+import { clampToCzechia } from "../filters.ts";
 import { describeStart, describeWindow, kindColor } from "../seasons.ts";
 
 interface Props {
@@ -11,15 +12,25 @@ interface Props {
 
 const LEAD_DAYS = [0, 3, 7, 14];
 
+/** "3 dny předem", "7 dní předem", "v den začátku". */
+export function leadLabel(days: number): string {
+  if (days === 0) return "v den začátku";
+  if (days === 1) return "1 den předem";
+  return days < 5 ? `${days} dny předem` : `${days} dní předem`;
+}
+
 /** Watch the visible part of the map and get notified when a harvest season starts there. */
-export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
+export function AlertsPanel({ bbox: view, kinds, session, onLogin }: Props) {
+  // Alerts watch the visible part of the Czech Republic.
+  const bbox = view ? clampToCzechia(view) : null;
+  const bboxKey = bbox?.join(",") ?? "";
   const [alerts, setAlerts] = useState<HarvestAlert[] | null>(null);
   const [preview, setPreview] = useState<AreaRow[] | null>(null);
   const [areaError, setAreaError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [leadDays, setLeadDays] = useState(3);
-  const [viaEmail, setViaEmail] = useState(true);
+  const [viaEmail, setViaEmail] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -31,6 +42,7 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
       .catch((reason: Error) => setMessage(reason.message));
   }, [session]);
 
+  // The box is recomputed on every render; its string key changes only with the area.
   useEffect(() => {
     if (!bbox) return;
     let current = true;
@@ -44,13 +56,14 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
       current = false;
       window.clearTimeout(timer);
     };
-  }, [bbox]);
+  }, [bboxKey]);
 
   if (!session) {
     return (
       <div className="alerts">
         <p>
-          Označte si kus mapy a dáme vám vědět, až tam začne sezóna vybraných plodin: zprávou na Na ovoce a e-mailem.
+          Označte si kus mapy, klidně celou republiku, a dáme vám vědět, až tam začne sezóna vybraných plodin. Upozornění
+          najdete pod zvonečkem v aplikaci, e-mail si můžete zapnout.
         </p>
         <button type="button" className="button" onClick={onLogin}>
           Přihlásit se a hlídat
@@ -86,6 +99,12 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
     setAlerts((list) => list?.map((item) => (item.id === alert.id ? updated : item)) ?? null);
   }
 
+  async function toggleEmail(alert: HarvestAlert) {
+    if (!session) return;
+    const updated = await api.updateAlert(alert.id, { via_email: !alert.via_email }, session);
+    setAlerts((list) => list?.map((item) => (item.id === alert.id ? updated : item)) ?? null);
+  }
+
   async function remove(alert: HarvestAlert) {
     if (!session || !window.confirm(`Opravdu přestat hlídat „${alert.name}“?`)) return;
     await api.deleteAlert(alert.id, session);
@@ -95,7 +114,11 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
   return (
     <div className="alerts">
       <form className="card" onSubmit={create}>
-        <h3>Hlídat tento výřez mapy</h3>
+        <h3>Hlídat výřez mapy</h3>
+        <p className="muted small">
+          Hlídá se část České republiky, kterou právě vidíte na mapě. Oddalte ji třeba na celou republiku.
+        </p>
+        {!bbox && <p className="notice">Posuňte mapu na Českou republiku.</p>}
         {areaError ? (
           <p className="notice">{areaError}</p>
         ) : (
@@ -147,14 +170,14 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
               <select value={leadDays} onChange={(event) => setLeadDays(Number(event.target.value))}>
                 {LEAD_DAYS.map((days) => (
                   <option key={days} value={days}>
-                    {days === 0 ? "v den začátku sezóny" : `${days} dní předem`}
+                    {leadLabel(days)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="field inline">
               <input type="checkbox" checked={viaEmail} onChange={(event) => setViaEmail(event.target.checked)} />
-              <span>Poslat také e-mail</span>
+              <span>Posílat také e-mailem (jinak jen upozornění v aplikaci)</span>
             </label>
             <button type="submit" className="button" disabled={busy || !bbox || preview === null}>
               Zapnout hlídání
@@ -172,10 +195,7 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
           <li key={alert.id} className={alert.is_active ? "card" : "card inactive"}>
             <div className="alert-head">
               <strong>{alert.name}</strong>
-              <span className="muted small">
-                {alert.lead_days === 0 ? "v den začátku" : `${alert.lead_days} dní předem`}
-                {alert.via_email ? " · e-mail" : ""}
-              </span>
+              <span className="muted small">{leadLabel(alert.lead_days)}</span>
             </div>
             <p className="small">
               {alert.kinds.length === 0
@@ -190,6 +210,10 @@ export function AlertsPanel({ bbox, kinds, session, onLogin }: Props) {
                 </li>
               ))}
             </ul>
+            <label className="field inline small">
+              <input type="checkbox" checked={alert.via_email} onChange={() => toggleEmail(alert)} />
+              <span>Také e-mailem</span>
+            </label>
             <div className="row">
               <button type="button" className="button ghost" onClick={() => toggle(alert)}>
                 {alert.is_active ? "Pozastavit" : "Znovu zapnout"}

@@ -83,7 +83,7 @@ class FruitList(generics.ListCreateAPIView):
             month = self.parse_month(month)
             qs = harvest_services.filter_in_month(qs, month)
 
-        if ripe := request.query_params.get("ripe"):
+        if ripe := request.query_params.get("ripe", "").lower() in ("1", "true", "yes"):
             qs = harvest_services.filter_reported_ripe(qs)
 
         if (page := self.paginate_queryset(qs)) is not None:

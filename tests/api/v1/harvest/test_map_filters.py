@@ -50,6 +50,7 @@ def test_fruit_list_reported_ripe(client, truncate_table, new_fruit, report):
 
     assert response.status_code == status.HTTP_200_OK
     assert ids(response) == {ripe.id}
+    assert len(client.get(reverse("api:fruit-list"), {"ripe": "0"}).json()) == 4
 
 
 @pytest.mark.django_db
@@ -75,5 +76,5 @@ def test_harvest_calendar(client, truncate_table, seasonal_kind, new_fruit, repo
 @pytest.mark.django_db
 def test_harvest_area_requires_small_bbox(client):
     assert client.get(reverse("api:harvest-area")).status_code == status.HTTP_400_BAD_REQUEST
-    assert client.get(reverse("api:harvest-area"), {"bbox": "12,48,19,51"}).status_code == 400
+    assert client.get(reverse("api:harvest-area"), {"bbox": "-10,36,30,60"}).status_code == 400
     assert client.get(reverse("api:harvest-area"), {"bbox": "a,b,c,d"}).status_code == 400

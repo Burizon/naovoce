@@ -57,7 +57,7 @@ def test_create_alert_with_overview(client, logged_in, seasonal_kind, new_fruit,
 @pytest.mark.parametrize(
     "payload",
     [
-        {"name": "Celá republika", "bbox": [12.0, 48.5, 19.0, 51.0]},
+        {"name": "Celá Evropa", "bbox": [-10.0, 36.0, 30.0, 60.0]},
         {"name": "Obráceně", "bbox": [14.6, 50.0, 14.3, 50.2]},
         {"name": "Neúplné", "bbox": [14.3, 50.0, 14.6]},
         {"name": "Neznámý druh", "bbox": PRAGUE_BBOX, "kinds": ["zzzz"]},
@@ -70,6 +70,20 @@ def test_create_alert_validation(client, logged_in, payload):
     response = client.post(reverse("api:harvest-alert-list"), payload, content_type="application/json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_alert_may_cover_the_czech_republic_and_mails_are_opt_in(client, logged_in):
+    logged_in()
+
+    response = client.post(
+        reverse("api:harvest-alert-list"),
+        {"name": "Celá republika", "bbox": [12.09, 48.55, 18.86, 51.06]},
+        content_type="application/json",
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["via_email"] is False
 
 
 @pytest.mark.django_db
@@ -99,7 +113,7 @@ def test_alert_is_sent_once_when_season_comes(alert, seasonal_kind, new_fruit, p
     settings.LANGUAGE_CODE = "cs"
     cherry = seasonal_kind(("fruit", 7, 1))
     new_fruit(kind=cherry, position=prague_point())
-    watch = alert(kinds=[cherry], lead_days=3)
+    watch = alert(kinds=[cherry], lead_days=3, via_email=True)
 
     assert send_due_alerts(day=date(2026, 6, 27)) == 0
     assert send_due_alerts(day=date(2026, 6, 28)) == 1
@@ -173,3 +187,25 @@ def test_alert_created_mid_season_waits_for_next_start(alert, seasonal_kind, new
     assert send_due_alerts(day=date(2026, 6, 9)) == 0
     HarvestAlertDelivery.objects.all().delete()
     assert send_due_alerts(day=date(2026, 6, 9)) == 0
+
+
+@pytest.mark.django_db
+def test_failing_alert_does_not_stop_others(alert, seasonal_kind, new_fruit, prague_point, monkeypatch):
+    from harvest import notifications
+
+    cherry = seasonal_kind(("fruit", 6, 2))
+    new_fruit(kind=cherry, position=prague_point())
+    broken = alert(kinds=[cherry], via_email=True)
+    working = alert(kinds=[cherry])
+    real_notify = notifications.notify
+
+    def flaky_notify(target, due):
+        if target.id == broken.id:
+            raise ConnectionError("SMTP down")
+        real_notify(target, due)
+
+    monkeypatch.setattr(notifications, "notify", flaky_notify)
+
+    assert send_due_alerts(day=date(2026, 6, 3)) == 1
+    assert not broken.deliveries.exists()
+    assert working.deliveries.exists()

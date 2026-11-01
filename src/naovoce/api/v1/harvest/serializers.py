@@ -6,8 +6,8 @@ from fruit.models import Kind
 from harvest import services
 from harvest.models import HarvestAlert, RipenessReport
 
-# A watched area should be a neighbourhood or a town, not a whole country.
-MAX_ALERT_AREA_DEGREES = 2.0
+# A watched area may span the whole Czech Republic (about 6.8° × 2.5°), not a continent.
+MAX_ALERT_AREA_DEGREES = 8.0
 # Reports may be added a little later, but not for a past season.
 MAX_REPORT_AGE_DAYS = 60
 

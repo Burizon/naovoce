@@ -1,8 +1,6 @@
 import logging
 
 from django.conf import settings
-from django.contrib.gis.db.models import PolygonField
-from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils import timezone
@@ -67,60 +65,47 @@ class RipenessReport(TimeStampedModel):
 post_save.connect(RipenessReport.post_create, sender=RipenessReport)
 
 
-class HarvestAlert(TimeStampedModel):
-    """User's watch over a map area: notify when the harvest season of watched kinds begins there."""
+class SeasonWatch(TimeStampedModel):
+    """User's season news: which kinds to follow, how far ahead, how often and through which channel.
 
-    user = models.ForeignKey(
+    Users without a row get the defaults: all kinds, a month ahead, every 14 days, in the app only.
+    """
+
+    LEAD = Choices(
+        two_weeks=(14, _("two weeks ahead")),
+        month=(30, _("a month ahead")),
+        two_months=(60, _("two months ahead")),
+    )
+    FREQUENCY = Choices(
+        weekly=(7, _("every week")),
+        fortnightly=(14, _("every 14 days")),
+        monthly=(30, _("every month")),
+    )
+
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         verbose_name=_("user"),
-        related_name="harvest_alerts",
+        related_name="season_watch",
         on_delete=models.CASCADE,
     )
-    name = models.CharField(_("name"), max_length=100)
-    area = PolygonField(_("area"), srid=4326)
     kinds = models.ManyToManyField(
         "fruit.Kind",
         verbose_name=_("kinds"),
-        related_name="harvest_alerts",
+        related_name="season_watches",
         blank=True,
-        help_text=_("Leave empty to watch all kinds mapped in the area."),
+        help_text=_("Leave empty to follow all kinds."),
     )
-    lead_days = models.PositiveSmallIntegerField(
-        _("days in advance"),
-        default=3,
-        validators=[MaxValueValidator(60)],
-        help_text=_("How many days before the expected season start to notify."),
+    lead_days = models.PositiveSmallIntegerField(_("announce ahead"), choices=LEAD.choices, default=LEAD.month)
+    frequency_days = models.PositiveSmallIntegerField(
+        _("season news frequency"), choices=FREQUENCY.choices, default=FREQUENCY.fortnightly
     )
-    is_active = models.BooleanField(_("active"), default=True)
-    # In-app notifications are the default channel; e-mail is opt-in.
+    via_app = models.BooleanField(_("notify in the app"), default=True)
     via_email = models.BooleanField(_("notify by e-mail"), default=False)
-
-    def is_owner(self, user):
-        return self.user == user
+    last_sent = models.DateField(_("last season news"), null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.user!s})"
+        return f"{self.user!s}"
 
     class Meta:
-        verbose_name = _("harvest alert")
-        verbose_name_plural = _("harvest alerts")
-        ordering = ("-created",)
-
-
-class HarvestAlertDelivery(models.Model):
-    """Record of an announced season so that one season occurrence is announced only once."""
-
-    alert = models.ForeignKey(HarvestAlert, related_name="deliveries", on_delete=models.CASCADE)
-    kind = models.ForeignKey("fruit.Kind", related_name="+", on_delete=models.CASCADE)
-    part = models.CharField(_("ripening plant part"), max_length=255, blank=True)
-    season_year = models.PositiveSmallIntegerField(_("season year"))
-    season_start = models.DateField(_("expected season start"))
-    sent = models.DateTimeField(_("sent"), default=timezone.now)
-
-    def __str__(self):
-        return f"{self.alert!s}: {self.kind!s} {self.season_year}"
-
-    class Meta:
-        verbose_name = _("harvest alert delivery")
-        verbose_name_plural = _("harvest alert deliveries")
-        unique_together = ("alert", "kind", "part", "season_year")
+        verbose_name = _("season watch")
+        verbose_name_plural = _("season watches")

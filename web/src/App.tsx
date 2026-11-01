@@ -1,22 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Bbox, type FruitMarker, type Kind, type Session, api, loadSession, saveSession } from "./api.ts";
-import { AlertsPanel } from "./components/AlertsPanel.tsx";
+import { CalendarPanel } from "./components/CalendarPanel.tsx";
 import { FilterChips } from "./components/FilterChips.tsx";
 import { FruitPanel } from "./components/FruitPanel.tsx";
-import { HarvestCalendar } from "./components/HarvestCalendar.tsx";
 import { KindPanel } from "./components/KindPanel.tsx";
 import { LoginDialog } from "./components/LoginDialog.tsx";
 import { MapView } from "./components/MapView.tsx";
 import { NotificationBell } from "./components/NotificationBell.tsx";
+import { NowPanel } from "./components/NowPanel.tsx";
+import { SettingsDialog } from "./components/SettingsDialog.tsx";
 import { type Filters, NO_FILTERS, countByKind, kindTiles, toggleKind, visibleMarkers } from "./filters.ts";
+import { activeMonths, defaultMonth } from "./seasons.ts";
 
-type Tab = "plants" | "calendar" | "alerts";
+type Tab = "plants" | "calendar" | "now";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "plants", label: "Plodiny" },
-  { id: "calendar", label: "Kalendář sklizně" },
-  { id: "alerts", label: "Hlídání sezóny" },
+  { id: "calendar", label: "Kalendář" },
+  { id: "now", label: "Aktuálně" },
 ];
+
+// Fallback until the calendar loads: the growing season in Czechia.
+const SEASON_MONTHS = [5, 6, 7, 8, 9, 10, 11, 12];
 
 export function App() {
   const [kinds, setKinds] = useState<Map<string, Kind>>(new Map());
@@ -32,12 +37,18 @@ export function App() {
   const [search, setSearch] = useState("");
   const [session, setSession] = useState<Session | null>(loadSession);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [months, setMonths] = useState<number[]>(SEASON_MONTHS);
 
   useEffect(() => {
     api
       .kinds()
       .then((list) => setKinds(new Map(list.map((item) => [item.key, item]))))
       .catch((reason: Error) => setError(reason.message));
+    api
+      .calendar(null)
+      .then((rows) => setMonths(activeMonths(rows)))
+      .catch(() => undefined);
   }, []);
 
   // Month and "ripe now" are answered by the API; kinds are filtered here so tiles keep their counts.
@@ -63,6 +74,16 @@ export function App() {
     setSession(next);
   }, []);
   const requireLogin = useCallback(() => setLoginOpen(true), []);
+  const openSettings = useCallback(() => (session ? setSettingsOpen(true) : setLoginOpen(true)), [session]);
+
+  /** Every tab starts from its own filter so the map is never empty or stale. */
+  function switchTab(next: Tab) {
+    setTab(next);
+    setSelected(null);
+    if (next === "plants") setFilters(NO_FILTERS);
+    if (next === "calendar") setFilters({ ...NO_FILTERS, month: defaultMonth(months) });
+    if (next === "now") setFilters({ ...NO_FILTERS, month: new Date().getMonth() + 1 });
+  }
 
   function select(id: number) {
     setSelected(id);
@@ -100,8 +121,8 @@ export function App() {
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
+              if (tab !== "plants") switchTab("plants");
               setSelected(null);
-              setTab("plants");
               setPanelOpen(true);
             }}
           />
@@ -109,7 +130,7 @@ export function App() {
         <div className="topbar-user">
           {session ? (
             <>
-              <NotificationBell session={session} />
+              <NotificationBell session={session} onSettings={openSettings} />
               <span className="muted user-name">{session.username}</span>
               <button type="button" className="button ghost" onClick={() => changeSession(null)}>
                 Odhlásit
@@ -138,7 +159,7 @@ export function App() {
             <>
               <nav className="tabs" aria-label="Části panelu">
                 {TABS.map((item) => (
-                  <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => setTab(item.id)}>
+                  <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => switchTab(item.id)}>
                     {item.label}
                   </button>
                 ))}
@@ -156,39 +177,21 @@ export function App() {
                 />
               )}
               {tab === "calendar" && (
-                <>
-                  <div className="calendar-toolbar">
-                    <button
-                      type="button"
-                      className="toggle"
-                      aria-pressed={filters.ripeOnly}
-                      onClick={() => setFilters({ ...filters, ripeOnly: !filters.ripeOnly })}
-                      title="Místa, která lidé v posledních 10 dnech nahlásili jako zralá"
-                    >
-                      <span className="dot ripe" aria-hidden="true" /> Teď zralé podle hlášení
-                    </button>
-                    <button
-                      type="button"
-                      className="toggle"
-                      aria-pressed={filters.month === null && !filters.ripeOnly}
-                      onClick={() => setFilters({ ...filters, month: null, ripeOnly: false })}
-                    >
-                      Celý rok
-                    </button>
-                  </div>
-                  <HarvestCalendar
-                    bbox={bbox}
-                    month={filters.month}
-                    selectedKinds={filters.kinds}
-                    onMonth={(month) =>
-                      setFilters({ ...filters, ripeOnly: false, month: month === filters.month ? null : month })
-                    }
-                    onKind={(key) => setFilters(toggleKind(filters, key))}
-                  />
-                </>
+                <CalendarPanel
+                  bbox={bbox}
+                  months={months}
+                  month={filters.month}
+                  onMonth={(month) => setFilters({ ...NO_FILTERS, month })}
+                />
               )}
-              {tab === "alerts" && (
-                <AlertsPanel bbox={bbox} kinds={kinds} session={session} onLogin={requireLogin} />
+              {tab === "now" && (
+                <NowPanel
+                  selected={filters.kinds}
+                  ripeOnly={filters.ripeOnly}
+                  onToggleKind={(key) => setFilters(toggleKind(filters, key))}
+                  onRipeOnly={(ripeOnly) => setFilters({ ...filters, ripeOnly })}
+                  onSettings={openSettings}
+                />
               )}
             </>
           )}
@@ -211,6 +214,10 @@ export function App() {
           )}
         </section>
       </main>
+
+      {settingsOpen && session && (
+        <SettingsDialog session={session} kinds={kinds} bbox={bbox} onClose={() => setSettingsOpen(false)} />
+      )}
 
       {loginOpen && (
         <LoginDialog

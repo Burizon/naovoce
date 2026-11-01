@@ -1,20 +1,5 @@
 // Map filter state and pure helpers (unit tested).
-import type { Bbox, FruitMarker, Kind } from "./api.ts";
-
-/** Bounding box of the Czech Republic: [west, south, east, north]. */
-export const CZECHIA_BBOX: Bbox = [12.09, 48.55, 18.86, 51.06];
-
-/** The visible map area limited to the Czech Republic, or null when the view lies outside it. */
-export function clampToCzechia(bbox: Bbox): Bbox | null {
-  const [west, south, east, north] = bbox;
-  const clamped: Bbox = [
-    Math.max(west, CZECHIA_BBOX[0]),
-    Math.max(south, CZECHIA_BBOX[1]),
-    Math.min(east, CZECHIA_BBOX[2]),
-    Math.min(north, CZECHIA_BBOX[3]),
-  ];
-  return clamped[0] < clamped[2] && clamped[1] < clamped[3] ? clamped : null;
-}
+import type { FruitMarker, Kind } from "./api.ts";
 
 export interface Filters {
   /** Selected kind keys; empty means all kinds. */

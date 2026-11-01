@@ -33,6 +33,16 @@ STATUS_SOON = "soon"
 STATUS_OFF = "off"
 STATUS_UNKNOWN = "unknown"
 
+# Phases of a season in season news.
+PHASE_SOON = "soon"
+PHASE_STARTED = "started"
+PHASE_RUNNING = "running"
+PHASE_ENDING = "ending"
+# A season that began at most this many days ago "has just started"; one ending within as many days "ends soon".
+FRESH_PHASE_DAYS = 14
+# Windows of different plants of one kind closer than this form one season of the kind.
+MERGE_GAP_DAYS = 21
+
 SOURCE_TYPICAL = "typical"
 SOURCE_OBSERVED = "observed"
 SOURCE_REPORTED = "reported"
@@ -234,23 +244,54 @@ def kinds_in_month(specs_by_kind, month):
     return {kind_id for kind_id, specs in specs_by_kind.items() if any(month in spec.months for spec in specs)}
 
 
-def area_windows(specs, reports_by_fruit, fruit_ids, day):
-    """Earliest upcoming or running window per plant part over all plants of one kind in an area.
+def season_phase(window, day, lead_days):
+    """Phase of a season window on `day` for season news, or None when it is too far or over."""
+    until_start = (window.start - day).days
+    if 0 < until_start <= lead_days:
+        return PHASE_SOON
+    if not window.contains(day):
+        return None
+    if -until_start <= FRESH_PHASE_DAYS:
+        return PHASE_STARTED
+    if (window.end - day).days <= FRESH_PHASE_DAYS:
+        return PHASE_ENDING
+    return PHASE_RUNNING
 
-    Used by harvest alerts: the season "starts in the area" when the first observed plant there
-    ripens. Plants nobody reported on do not count, they would always win with the coarse typical
-    season starting on the first day of a month; the typical season covers parts without reports.
+
+def merge_windows(windows):
+    """Join windows of one plant part that overlap or follow within MERGE_GAP_DAYS into seasons."""
+    merged = []
+    for window in sorted(windows, key=lambda item: item.start):
+        last = merged[-1] if merged else None
+        if last and last.part == window.part and (window.start - last.end).days <= MERGE_GAP_DAYS:
+            source = SOURCE_REPORTED if SOURCE_REPORTED in (last.source, window.source) else last.source
+            merged[-1] = Window(last.part, last.start, max(last.end, window.end), source)
+        else:
+            merged.append(window)
+    return merged
+
+
+def area_windows(specs, reports_by_fruit, fruit_ids, day):
+    """Running or next season per plant part over all plants of one kind.
+
+    The season starts when the first observed plant ripens and lasts while plants keep ripening
+    one after another. Plants nobody reported on do not count, they would always win with the
+    coarse typical season starting on the first day of a month; the typical season covers parts
+    without reports.
     """
-    windows = {}
+    by_part = defaultdict(list)
     for fruit_id in fruit_ids:
         if not (reports := reports_by_fruit.get(fruit_id)):
             continue
         window = predicted_window(specs, reports, day)
-        if window is None or window.end < day:
-            continue
-        known = windows.get(window.part)
-        if known is None or window.start < known.start:
-            windows[window.part] = window
+        if window is not None:
+            by_part[window.part].append(window)
+
+    windows = {}
+    for part, items in by_part.items():
+        spans = [window for window in merge_windows(items) if window.end >= day]
+        if spans:
+            windows[part] = spans[0]
 
     for spec in specs:
         if spec.part not in windows:

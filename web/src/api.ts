@@ -81,29 +81,39 @@ export interface CalendarRow {
   ripe_reports_by_month: number[];
 }
 
-export interface AreaRow {
+export type Bbox = [west: number, south: number, east: number, north: number];
+
+export interface NewsItem {
   kind: string;
   name: string;
   col: string;
   count: number;
-  windows: Window[];
+  ripe_reports: number;
+  window: Window | null;
 }
 
-export type Bbox = [west: number, south: number, east: number, north: number];
+export interface SeasonNews {
+  date: string;
+  started: NewsItem[];
+  soon: NewsItem[];
+  running: NewsItem[];
+  ending: NewsItem[];
+  ripe_now: NewsItem[];
+}
 
-export interface HarvestAlert {
-  id: number;
-  name: string;
-  bbox: Bbox;
+export type LeadDays = 14 | 30 | 60;
+export type FrequencyDays = 7 | 14 | 30;
+
+export interface SeasonWatch {
   kinds: string[];
-  lead_days: number;
-  is_active: boolean;
+  lead_days: LeadDays;
+  frequency_days: FrequencyDays;
+  via_app: boolean;
   via_email: boolean;
-  created: string;
-  overview: AreaRow[];
+  last_sent: string | null;
 }
 
-export type HarvestAlertInput = Pick<HarvestAlert, "name" | "bbox" | "kinds" | "lead_days" | "via_email">;
+export type SeasonWatchInput = Omit<SeasonWatch, "last_sent">;
 
 export interface Notification {
   id: number;
@@ -211,18 +221,12 @@ export const api = {
   calendar: (bbox: Bbox | null) =>
     request<CalendarRow[]>(`/harvest/calendar/${query({ bbox: bbox && bboxParam(bbox) })}`),
 
-  area: (bbox: Bbox) => request<AreaRow[]>(`/harvest/area/${query({ bbox: bboxParam(bbox) })}`),
+  news: (leadDays = 30) => request<SeasonNews>(`/harvest/news/${query({ lead_days: leadDays })}`),
 
-  alerts: (session: Session) => request<HarvestAlert[]>("/harvest/alerts/", {}, session),
+  watch: (session: Session) => request<SeasonWatch>("/harvest/watch/", {}, session),
 
-  createAlert: (input: HarvestAlertInput, session: Session) =>
-    request<HarvestAlert>("/harvest/alerts/", { method: "POST", body: JSON.stringify(input) }, session),
-
-  updateAlert: (id: number, changes: Partial<HarvestAlertInput & { is_active: boolean }>, session: Session) =>
-    request<HarvestAlert>(`/harvest/alerts/${id}/`, { method: "PATCH", body: JSON.stringify(changes) }, session),
-
-  deleteAlert: (id: number, session: Session) =>
-    request<void>(`/harvest/alerts/${id}/`, { method: "DELETE" }, session),
+  saveWatch: (input: SeasonWatchInput, session: Session) =>
+    request<SeasonWatch>("/harvest/watch/", { method: "PUT", body: JSON.stringify(input) }, session),
 
   notifications: (session: Session) => request<Notification[]>("/users/me/messages/", {}, session),
 

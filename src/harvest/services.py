@@ -2,7 +2,7 @@
 import datetime
 from collections import defaultdict
 
-from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
 from django.db.models.functions import ExtractMonth
 from django.utils import timezone
 
@@ -14,6 +14,8 @@ from .models import RipenessReport
 
 # Older observations say little about today's climate and the plant's current state.
 REPORT_HISTORY_YEARS = 5
+
+NEWS_PHASES = (seasons.PHASE_STARTED, seasons.PHASE_SOON, seasons.PHASE_RUNNING, seasons.PHASE_ENDING)
 
 
 def today():
@@ -81,8 +83,16 @@ def fruit_season(fruit, day=None):
 
 
 def filter_in_month(queryset, month):
-    """Plants whose kind typically ripens in the month (1–12)."""
-    return queryset.filter(kind_id__in=seasons.kinds_in_month(specs_by_kind(), month))
+    """Plants whose kind typically ripens in the month (1–12) or that people reported ripe in that month."""
+    reported = RipenessReport.objects.filter(
+        fruit=OuterRef("pk"),
+        state=seasons.RIPE,
+        observed_on__month=month,
+        observed_on__gte=_report_history_start(today()),
+    )
+    return queryset.annotate(reported_in_month=Exists(reported)).filter(
+        Q(kind_id__in=seasons.kinds_in_month(specs_by_kind(), month)) | Q(reported_in_month=True)
+    )
 
 
 def filter_reported_ripe(queryset, day=None):
@@ -100,28 +110,80 @@ def filter_reported_ripe(queryset, day=None):
     return queryset.annotate(latest_ripeness=Subquery(latest_state)).filter(latest_ripeness=seasons.RIPE)
 
 
-def fruit_in_area(area, kinds=None):
-    queryset = Fruit.objects.valid().filter(position__within=area)
-    if kinds:
-        queryset = queryset.filter(kind__in=kinds)
-    return queryset
-
-
-def area_overview(area, kinds=None, day=None):
-    """Kinds mapped in an area with their plant counts and next (or running) harvest windows."""
+def kind_windows(day=None):
+    """Running or next season windows per kind over the whole map, refined by people's reports."""
     day = day or today()
-    fruit_ids_by_kind = defaultdict(list)
-    for fruit_id, kind_id in fruit_in_area(area, kinds).values_list("id", "kind_id"):
-        fruit_ids_by_kind[kind_id].append(fruit_id)
+    reports_by_fruit = defaultdict(list)
+    fruit_ids_by_kind = defaultdict(set)
+    rows = RipenessReport.objects.filter(
+        fruit__in=Fruit.objects.valid(),
+        observed_on__gte=_report_history_start(day),
+        observed_on__lte=day,
+    ).values_list("fruit_id", "fruit__kind_id", "observed_on", "state", "author_id")
+    for fruit_id, kind_id, observed_on, state, author_id in rows:
+        reports_by_fruit[fruit_id].append(seasons.Report(observed_on, state, author_id))
+        fruit_ids_by_kind[kind_id].add(fruit_id)
 
-    all_specs = specs_by_kind()
-    reports = reports_for_fruits([fid for ids in fruit_ids_by_kind.values() for fid in ids], day)
-    overview = []
-    for kind in Kind.objects.valid().filter(id__in=fruit_ids_by_kind.keys()):
-        windows = seasons.area_windows(all_specs.get(kind.id, []), reports, fruit_ids_by_kind[kind.id], day)
-        overview.append({"kind": kind, "count": len(fruit_ids_by_kind[kind.id]), "windows": windows})
+    return {
+        kind_id: seasons.area_windows(specs, reports_by_fruit, fruit_ids_by_kind[kind_id], day)
+        for kind_id, specs in specs_by_kind().items()
+    }
 
-    return sorted(overview, key=lambda row: (row["windows"][0].start if row["windows"] else datetime.date.max))
+
+def season_news(day=None, lead_days=30, kinds=None):
+    """What starts, runs and ends now: kinds grouped by the phase of their season.
+
+    Each item: kind, its window, number of mapped places and of ripe reports from the last days.
+    `kinds` limits the news to followed kinds (None = all).
+    """
+    day = day or today()
+    places = dict(
+        Fruit.objects.valid().order_by().values("kind_id").annotate(n=Count("id")).values_list("kind_id", "n")
+    )
+    ripe_recent = dict(
+        RipenessReport.objects.filter(
+            fruit__in=Fruit.objects.valid(),
+            state=seasons.RIPE,
+            observed_on__gte=day - datetime.timedelta(days=seasons.REPORT_VALID_DAYS),
+            observed_on__lte=day,
+        )
+        .order_by()
+        .values("fruit__kind_id")
+        .annotate(n=Count("id"))
+        .values_list("fruit__kind_id", "n")
+    )
+    followed = {kind.id for kind in kinds} if kinds else None
+    by_id = {kind.id: kind for kind in Kind.objects.valid()}
+
+    news = {phase: [] for phase in NEWS_PHASES}
+    for kind_id, windows in kind_windows(day).items():
+        kind = by_id.get(kind_id)
+        if kind is None or not places.get(kind_id) or (followed is not None and kind_id not in followed):
+            continue
+        for window in windows:
+            phase = seasons.season_phase(window, day, lead_days)
+            if phase:
+                news[phase].append(
+                    {
+                        "kind": kind,
+                        "window": window,
+                        "count": places[kind_id],
+                        "ripe_reports": ripe_recent.get(kind_id, 0),
+                    }
+                )
+                break
+    for items in news.values():
+        items.sort(key=lambda item: (item["window"].start, item["kind"].name))
+
+    news["ripe_now"] = sorted(
+        (
+            {"kind": by_id[kind_id], "window": None, "count": places.get(kind_id, 0), "ripe_reports": count}
+            for kind_id, count in ripe_recent.items()
+            if kind_id in by_id and (followed is None or kind_id in followed)
+        ),
+        key=lambda item: -item["ripe_reports"],
+    )
+    return news
 
 
 def calendar(area=None, day=None):

@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from fruit.models import Fruit
 from harvest import services
-from harvest.models import HarvestAlert, RipenessReport
+from harvest.models import RipenessReport, SeasonWatch
 
 from ..permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from . import serializers
@@ -19,11 +19,11 @@ REPORT_LIST_DAYS = 400
 REPORT_LIST_LIMIT = 50
 
 
-def parse_bbox(value, max_degrees=None):
+def parse_bbox(value):
     """Parse `west,south,east,north` query parameter into a polygon."""
     try:
         west, south, east, north = (float(part) for part in value.split(","))
-        return serializers.bbox_polygon(west, south, east, north, max_degrees)
+        return serializers.bbox_polygon(west, south, east, north)
     except ValueError:
         raise ValidationError({"bbox": _("Bounding box must be four numbers: west,south,east,north.")})
     except ValidationError as e:
@@ -90,35 +90,23 @@ class HarvestCalendar(generics.GenericAPIView):
         return Response(self.get_serializer(rows, many=True).data)
 
 
-class HarvestArea(generics.GenericAPIView):
-    """Kinds mapped in `?bbox=w,s,e,n` with their next harvest windows (preview of an alert)."""
-
-    serializer_class = serializers.AreaOverviewSerializer
+class SeasonNews(APIView):
+    """What starts, runs and ends now over the whole map; `?lead_days=` (default 30) looks ahead."""
 
     def get(self, request, *args, **kwargs):
-        if not (bbox := request.query_params.get("bbox")):
-            raise ValidationError({"bbox": _("This parameter is required.")})
+        lead = request.query_params.get("lead_days", "30")
+        if not lead.isdigit() or not 0 <= int(lead) <= 90:
+            raise ValidationError({"lead_days": _("Days ahead must be a number 0–90.")})
+        news = services.season_news(services.today(), int(lead))
+        return Response({"date": services.today().isoformat(), **serializers.SeasonNewsSerializer(news).data})
 
-        area = parse_bbox(bbox, max_degrees=serializers.MAX_ALERT_AREA_DEGREES)
-        return Response(self.get_serializer(services.area_overview(area), many=True).data)
 
+class MySeasonWatch(generics.RetrieveUpdateAPIView):
+    """Season news settings of the current user; created with the defaults on first access."""
 
-class OwnAlertsMixin:
-    serializer_class = serializers.HarvestAlertSerializer
+    serializer_class = serializers.SeasonWatchSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return HarvestAlert.objects.filter(user=self.request.user).prefetch_related("kinds")
-
-
-class HarvestAlertList(OwnAlertsMixin, generics.ListCreateAPIView):
-    """List or create the current user's harvest alerts."""
-
-    pagination_class = None
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class HarvestAlertDetail(OwnAlertsMixin, generics.RetrieveUpdateDestroyAPIView):
-    """Retrieve, update or delete one of the current user's harvest alerts."""
+    def get_object(self):
+        watch, _created = SeasonWatch.objects.get_or_create(user=self.request.user)
+        return watch

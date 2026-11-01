@@ -4,20 +4,16 @@ from rest_framework import serializers
 
 from fruit.models import Kind
 from harvest import services
-from harvest.models import HarvestAlert, RipenessReport
+from harvest.models import RipenessReport, SeasonWatch
 
-# A watched area may span the whole Czech Republic (about 6.8° × 2.5°), not a continent.
-MAX_ALERT_AREA_DEGREES = 8.0
 # Reports may be added a little later, but not for a past season.
 MAX_REPORT_AGE_DAYS = 60
 
 
-def bbox_polygon(west, south, east, north, max_degrees=None):
+def bbox_polygon(west, south, east, north):
     """Validated polygon of a [west, south, east, north] bounding box in WGS 84 degrees."""
     if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
         raise serializers.ValidationError(_("Bounding box must be [west, south, east, north]."))
-    if max_degrees is not None and (east - west > max_degrees or north - south > max_degrees):
-        raise serializers.ValidationError(_("The watched area is too large, zoom in on the map."))
     return Polygon.from_bbox((west, south, east, north))
 
 
@@ -86,14 +82,6 @@ class KindKeyField(serializers.SlugRelatedField):
         super().__init__(slug_field="key", queryset=Kind.objects.valid(), **kwargs)
 
 
-class AreaOverviewSerializer(serializers.Serializer):
-    kind = serializers.CharField(source="kind.key")
-    name = serializers.CharField(source="kind.name")
-    col = serializers.CharField(source="kind.color")
-    count = serializers.IntegerField()
-    windows = WindowSerializer(many=True)
-
-
 class CalendarSerializer(serializers.Serializer):
     kind = serializers.CharField(source="kind.key")
     name = serializers.CharField(source="kind.name")
@@ -104,34 +92,28 @@ class CalendarSerializer(serializers.Serializer):
     ripe_reports_by_month = serializers.ListField(child=serializers.IntegerField())
 
 
-class BboxField(serializers.ListField):
-    """Area as [west, south, east, north] in WGS 84 degrees."""
-
-    child = serializers.FloatField()
-
-    def to_representation(self, value):
-        return list(value.extent)
-
-    def to_internal_value(self, data):
-        coordinates = super().to_internal_value(data)
-        if len(coordinates) != 4:
-            raise serializers.ValidationError(_("Bounding box must be [west, south, east, north]."))
-        return bbox_polygon(*coordinates, max_degrees=MAX_ALERT_AREA_DEGREES)
+class NewsItemSerializer(serializers.Serializer):
+    kind = serializers.CharField(source="kind.key")
+    name = serializers.CharField(source="kind.name")
+    col = serializers.CharField(source="kind.color")
+    count = serializers.IntegerField()
+    ripe_reports = serializers.IntegerField()
+    window = WindowSerializer(allow_null=True)
 
 
-class HarvestAlertSerializer(serializers.ModelSerializer):
+class SeasonNewsSerializer(serializers.Serializer):
+    started = NewsItemSerializer(many=True)
+    soon = NewsItemSerializer(many=True)
+    running = NewsItemSerializer(many=True)
+    ending = NewsItemSerializer(many=True)
+    ripe_now = NewsItemSerializer(many=True)
 
-    bbox = BboxField(source="area")
+
+class SeasonWatchSerializer(serializers.ModelSerializer):
 
     kinds = KindKeyField(many=True, required=False)
 
-    overview = serializers.SerializerMethodField()
-
-    def get_overview(self, obj):
-        rows = services.area_overview(obj.area, list(obj.kinds.all()) or None)
-        return AreaOverviewSerializer(rows, many=True).data
-
     class Meta:
-        model = HarvestAlert
-        fields = "id name bbox kinds lead_days is_active via_email created overview".split()
-        read_only_fields = ("created",)
+        model = SeasonWatch
+        fields = "kinds lead_days frequency_days via_app via_email last_sent".split()
+        read_only_fields = ("last_sent",)

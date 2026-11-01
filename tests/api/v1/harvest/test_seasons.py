@@ -110,3 +110,28 @@ def test_area_window_is_the_earliest_plant():
     windows = seasons.area_windows([CHERRY], reports, [10, 11, 12], date(2026, 5, 1))
 
     assert [(w.part, w.start) for w in windows] == [("fruit", date(2026, 6, 8))]
+
+
+def test_season_phase():
+    window = seasons.typical_window(SeasonSpec("fruit", 6, 2), 2026)  # 1. 6. – 31. 7.
+
+    assert seasons.season_phase(window, date(2026, 4, 1), 30) is None
+    assert seasons.season_phase(window, date(2026, 5, 10), 30) == seasons.PHASE_SOON
+    assert seasons.season_phase(window, date(2026, 5, 10), 14) is None
+    assert seasons.season_phase(window, date(2026, 6, 10), 30) == seasons.PHASE_STARTED
+    assert seasons.season_phase(window, date(2026, 6, 30), 30) == seasons.PHASE_RUNNING
+    assert seasons.season_phase(window, date(2026, 7, 25), 30) == seasons.PHASE_ENDING
+    assert seasons.season_phase(window, date(2026, 8, 2), 30) is None
+
+
+def test_kind_season_spans_plants_ripening_one_after_another():
+    reports = {
+        10: [Report(date(2026, 7, 5), RIPE, 1), Report(date(2026, 9, 30), RIPE, 1)],
+        11: [Report(date(2026, 10, 15), RIPE, 2), Report(date(2026, 10, 30), RIPE, 2)],
+    }
+
+    # Without merging, the late tree alone would look like a season that has just started.
+    windows = seasons.area_windows([SeasonSpec("fruit", 7, 2)], reports, [10, 11], date(2026, 10, 20))
+
+    assert [(w.start, w.end) for w in windows] == [(date(2026, 7, 5), date(2026, 10, 30))]
+    assert seasons.season_phase(windows[0], date(2026, 10, 20), 30) == seasons.PHASE_ENDING

@@ -716,12 +716,253 @@ button:focus-visible {
   padding: 0.3rem 0;
 }
 
-/* Harvest calendar */
-.calendar-toolbar {
+/* Calendar: month buttons and what is harvested in the month */
+.month-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.month-button {
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 0.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.month-button:hover {
+  background: var(--color-cream);
+}
+
+.month-button.now::after {
+  content: "teď";
+  position: absolute;
+  top: -0.55rem;
+  right: 0.4rem;
+  background: var(--color-mustard);
+  color: var(--color-brown);
+  border-radius: var(--radius-pill);
+  font-size: 0.65rem;
+  padding: 0 0.35rem;
+  line-height: 1.1rem;
+}
+
+.month-button[aria-pressed="true"] {
+  background: var(--color-green-strong);
+  border-color: var(--color-green-strong);
+  color: var(--color-white);
+}
+
+.month-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--color-cream);
+}
+
+.month-list-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.6rem;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
+}
+
+.tag.typical {
+  background: #eef5e3;
+  color: var(--color-green-strong);
+}
+
+.tag.reported {
+  background: #fbf3d2;
+  color: var(--color-brown);
+}
+
+.tag.reported-only {
+  background: var(--color-cream);
+  color: var(--color-muted);
+}
+
+.calendar {
+  margin-top: 1.2rem;
+}
+
+/* Now: season news on the panel */
+.news-section {
+  margin: 1rem 0;
+}
+
+.news-item {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.4rem 0.4rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.news-item:hover {
+  background: var(--color-cream);
+}
+
+.news-item[aria-pressed="true"] {
+  background: #f2f7ea;
+  box-shadow: inset 3px 0 0 var(--color-green-strong);
+}
+
+.news-name {
+  font-weight: 700;
+  margin-right: auto;
+}
+
+/* Small link-like buttons */
+.link-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-green-strong);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-button:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.small-actions {
+  gap: 1rem;
+}
+
+/* Segmented choice */
+.segmented {
+  display: flex;
+  background: var(--color-cream);
+  border-radius: var(--radius-pill);
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+
+.segmented button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.4rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--color-green-strong);
+  color: var(--color-white);
+}
+
+/* Settings dialog */
+.dialog.settings-dialog {
+  width: min(600px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.settings-dialog .field {
+  margin: 0.9rem 0;
+}
+
+.settings-dialog .field .field.inline {
+  margin: 0.35rem 0;
+}
+
+.kind-checklist {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.1rem 0.6rem;
+}
+
+.kind-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-size: 0.93rem;
+}
+
+/* Notifications: pop-up for new ones */
+.popover-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.notification-list li > span {
+  white-space: pre-line;
+}
+
+.toast {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: min(360px, 90vw);
+  background: var(--color-white);
+  border-left: 5px solid var(--color-mustard);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  padding: 0.8rem 2.2rem 0.7rem 1rem;
+  z-index: 1300;
+  animation: toast-in 200ms ease-out;
+}
+
+.toast-text {
+  display: block;
+  white-space: pre-line;
+  margin-bottom: 0.3rem;
+}
+
+.toast-text .date {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.toast-close {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 .calendar table {
@@ -766,8 +1007,13 @@ button:focus-visible {
 }
 
 .calendar .kind-col {
-  width: 40%;
+  width: 34%;
   text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .calendar tbody th button {
@@ -909,5 +1155,9 @@ button:focus-visible {
   .app {
     height: auto;
     min-height: 100%;
+  }
+
+  .kind-checklist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

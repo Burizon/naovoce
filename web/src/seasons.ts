@@ -1,5 +1,5 @@
 // Presentation helpers for harvest seasons; pure functions with unit tests.
-import type { SeasonStatus, TypicalSeason, Window, WindowSource } from "./api.ts";
+import type { CalendarRow, SeasonStatus, TypicalSeason, Window, WindowSource } from "./api.ts";
 
 export const MONTHS_SHORT = ["led", "úno", "bře", "dub", "kvě", "čvn", "čvc", "srp", "zář", "říj", "lis", "pro"];
 export const MONTHS = [
@@ -78,3 +78,42 @@ export function describeStart(window: Window, today: Date = new Date()): string 
 
 /** Hex color "#RRGGBB" from the API's "RRGGBB". */
 export const kindColor = (col: string): string => `#${col.replace(/^#/, "")}`;
+
+/** Months (1–12) in which anything is typically harvested or was reported ripe; empty months are hidden. */
+export function activeMonths(rows: readonly CalendarRow[]): number[] {
+  const months = new Set<number>();
+  for (const row of rows) {
+    for (const month of typicalMonths(row.typical)) months.add(month);
+    row.ripe_reports_by_month.forEach((count, index) => count > 0 && months.add(index + 1));
+  }
+  return [...months].sort((a, b) => a - b);
+}
+
+export interface MonthEntry {
+  row: CalendarRow;
+  /** The month is in the typical season of the kind. */
+  typical: boolean;
+  /** Ripe reports in that month over recent years. */
+  reports: number;
+}
+
+/** What is harvested in a month: typical seasons first, then kinds known only from reports. */
+export function harvestInMonth(rows: readonly CalendarRow[], month: number): MonthEntry[] {
+  return rows
+    .map((row) => ({
+      row,
+      typical: typicalMonths(row.typical).has(month),
+      reports: row.ripe_reports_by_month[month - 1] ?? 0,
+    }))
+    .filter((entry) => entry.typical || entry.reports > 0)
+    .sort(
+      (a, b) =>
+        Number(b.typical) - Number(a.typical) || b.reports - a.reports || a.row.name.localeCompare(b.row.name, "cs"),
+    );
+}
+
+/** The current month when it has a harvest, otherwise the next month that has one. */
+export function defaultMonth(months: readonly number[], today: Date = new Date()): number | null {
+  const current = today.getMonth() + 1;
+  return months.find((month) => month >= current) ?? months[0] ?? null;
+}

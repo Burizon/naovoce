@@ -14,7 +14,6 @@ from rest_framework.response import Response
 
 from fruit.models import Fruit, Kind
 from harvest import services as harvest_services
-from herbarium.models import Season
 
 from ..comments.serializers import CommentSerializer
 from ..permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
@@ -52,13 +51,6 @@ class CachedResponse(Response):
     def on_fruit_delete(*args, **kwargs):
         CachedResponse.cache.clear()
 
-    @staticmethod
-    @receiver(post_save, sender=Season)
-    @receiver(post_delete, sender=Season)
-    def on_season_change(*args, **kwargs):
-        # Lists filtered by harvest month depend on typical seasons.
-        CachedResponse.cache.clear()
-
 
 class FruitList(generics.ListCreateAPIView):
     """List or create Fruit resources."""
@@ -93,13 +85,10 @@ class FruitList(generics.ListCreateAPIView):
         # We are not paginating, so we can serialize iterator (saves memory)
         serializer = self.get_serializer(qs.iterator(), many=True)
 
-        if not (user or catalogue or ripe):
+        if not (user or catalogue or ripe or month):
             # Caching all combinations of kind & user would produce too many cache entries;
-            # reported ripeness changes every day.
-            cache_key = kind or "all"
-            if month:
-                cache_key += f":month:{month}"
-            return CachedResponse(cache_key, serializer.data)
+            # harvest filters depend on ripeness reports that change every day.
+            return CachedResponse(kind or "all", serializer.data)
 
         return Response(serializer.data)
 

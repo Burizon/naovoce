@@ -30,6 +30,18 @@ def test_fruit_list_month_filter(client, truncate_table, seasonal_kind, new_frui
 
 
 @pytest.mark.django_db
+def test_fruit_list_month_includes_reported_plants(client, truncate_table, seasonal_kind, new_fruit, report):
+    truncate_table(Fruit)
+    early_cherry, other_cherry = (new_fruit(kind=seasonal_kind(("fruit", 6, 2))) for _ in range(2))
+    report(early_cherry, "ripe", date(2025, 5, 28))
+    report(other_cherry, "unripe", date(2025, 5, 28))
+
+    response = client.get(reverse("api:fruit-list"), {"month": 5})
+
+    assert ids(response) == {early_cherry.id}
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize("month", ["0", "13", "june"])
 def test_fruit_list_bad_month(client, month):
     response = client.get(reverse("api:fruit-list"), {"month": month})
@@ -71,10 +83,3 @@ def test_harvest_calendar(client, truncate_table, seasonal_kind, new_fruit, repo
     assert cherry["ripe_reports_by_month"] == [0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]
     assert [row["kind"] for row in local] == [cherry_kind.key]
     assert local[0]["count"] == 1
-
-
-@pytest.mark.django_db
-def test_harvest_area_requires_small_bbox(client):
-    assert client.get(reverse("api:harvest-area")).status_code == status.HTTP_400_BAD_REQUEST
-    assert client.get(reverse("api:harvest-area"), {"bbox": "-10,36,30,60"}).status_code == 400
-    assert client.get(reverse("api:harvest-area"), {"bbox": "a,b,c,d"}).status_code == 400

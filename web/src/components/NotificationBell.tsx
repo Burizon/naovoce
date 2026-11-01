@@ -2,16 +2,47 @@ import { useCallback, useEffect, useState } from "react";
 import { type Notification, type Session, api } from "../api.ts";
 
 const REFRESH_MS = 60_000;
+const TOAST_MS = 15_000;
+const SEEN_KEY = "naovoce.lastToast";
 
-/** In-app notifications (harvest alerts and other messages) behind a bell in the header. */
-export function NotificationBell({ session }: { session: Session }) {
+function lastToastId(): number {
+  try {
+    return Number(localStorage.getItem(SEEN_KEY) ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+function rememberToast(id: number): void {
+  try {
+    localStorage.setItem(SEEN_KEY, String(id));
+  } catch {
+    // Without storage the pop-up may show again after reload; harmless.
+  }
+}
+
+interface Props {
+  session: Session;
+  onSettings: () => void;
+}
+
+/** In-app notifications (season news and other messages) behind a bell, with a pop-up for new ones. */
+export function NotificationBell({ session, onSettings }: Props) {
   const [items, setItems] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const [toast, setToast] = useState<Notification | null>(null);
 
   const load = useCallback(() => {
     api
       .notifications(session)
-      .then(setItems)
+      .then((list) => {
+        setItems(list);
+        const newest = list.find((item) => !item.is_read);
+        if (newest && newest.id > lastToastId()) {
+          rememberToast(newest.id);
+          setToast(newest);
+        }
+      })
       .catch(() => undefined);
   }, [session]);
 
@@ -21,12 +52,18 @@ export function NotificationBell({ session }: { session: Session }) {
     return () => window.clearInterval(timer);
   }, [load]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
   const unread = items.filter((item) => !item.is_read).length;
 
-  function toggle() {
-    const next = !open;
-    setOpen(next);
-    if (next && unread > 0) {
+  function openList() {
+    setToast(null);
+    setOpen(true);
+    if (unread > 0) {
       api
         .markNotificationsRead(session)
         .then(() => window.setTimeout(load, 2000))
@@ -41,7 +78,7 @@ export function NotificationBell({ session }: { session: Session }) {
         className="icon-button"
         aria-label={unread ? `Upozornění, nepřečtená: ${unread}` : "Upozornění"}
         aria-expanded={open}
-        onClick={toggle}
+        onClick={() => (open ? setOpen(false) : openList())}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path
@@ -51,11 +88,24 @@ export function NotificationBell({ session }: { session: Session }) {
         </svg>
         {unread > 0 && <span className="badge">{unread}</span>}
       </button>
+
       {open && (
         <div className="bell-popover" role="dialog" aria-label="Upozornění">
-          <h3>Upozornění</h3>
+          <div className="popover-head">
+            <h3>Upozornění</h3>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => {
+                setOpen(false);
+                onSettings();
+              }}
+            >
+              Nastavení zpráv
+            </button>
+          </div>
           {items.length === 0 ? (
-            <p className="muted small">Zatím žádná. Zapněte si hlídání sezóny pro kus mapy.</p>
+            <p className="muted small">Zatím žádná. Sezónní zprávy chodí podle vašeho nastavení.</p>
           ) : (
             <ul className="plain notification-list">
               {items.map((item) => (
@@ -66,6 +116,18 @@ export function NotificationBell({ session }: { session: Session }) {
               ))}
             </ul>
           )}
+        </div>
+      )}
+
+      {toast && !open && (
+        <div className="toast" role="status">
+          <button type="button" className="icon-button toast-close" aria-label="Zavřít" onClick={() => setToast(null)}>
+            ×
+          </button>
+          <span className="toast-text" dangerouslySetInnerHTML={{ __html: toast.text }} />
+          <button type="button" className="link-button" onClick={openList}>
+            Zobrazit upozornění
+          </button>
         </div>
       )}
     </div>

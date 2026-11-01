@@ -1,10 +1,9 @@
 from django.urls import path
 
-from .views import HarvestAlertDetail, HarvestAlertList, HarvestArea, HarvestCalendar
+from .views import HarvestCalendar, MySeasonWatch, SeasonNews
 
 urlpatterns = [
     path("calendar/", HarvestCalendar.as_view(), name="harvest-calendar"),
-    path("area/", HarvestArea.as_view(), name="harvest-area"),
-    path("alerts/", HarvestAlertList.as_view(), name="harvest-alert-list"),
-    path("alerts/<int:pk>/", HarvestAlertDetail.as_view(), name="harvest-alert-detail"),
+    path("news/", SeasonNews.as_view(), name="harvest-news"),
+    path("watch/", MySeasonWatch.as_view(), name="harvest-watch"),
 ]

@@ -2,14 +2,16 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from harvest.notifications import ALERT_MESSAGE
+from harvest.notifications import SEASON_NEWS_MESSAGE
 
 
 @pytest.mark.django_db
 def test_my_messages_lists_notifications_newest_first(client, random_password, new_user):
     password = random_password()
     user = new_user(password=password)
-    user.send_message(ALERT_MESSAGE, is_system=True, context={"area": "Stromovka", "kinds": "Třešeň (1. 6., 3×)"})
+    user.send_message(
+        SEASON_NEWS_MESSAGE, is_system=True, context={"title": "Sezónní zprávy", "lines": "Třešeň (1. 6.)"}
+    )
     assert client.login(username=user.username, password=password)
 
     response = client.get(reverse("api:users-me-messages"))
@@ -18,8 +20,8 @@ def test_my_messages_lists_notifications_newest_first(client, random_password, n
     messages = response.json()
     # The welcome message comes first on registration, the harvest alert is newer.
     assert len(messages) == 2
-    assert "<strong>Stromovka</strong>" in messages[0]["text"]
-    assert "Třešeň (1. 6., 3×)" in messages[0]["text"]
+    assert "<strong>Sezónní zprávy</strong>" in messages[0]["text"]
+    assert "Třešeň (1. 6.)" in messages[0]["text"]
     assert messages[0]["is_read"] is False
 
 
@@ -27,7 +29,7 @@ def test_my_messages_lists_notifications_newest_first(client, random_password, n
 def test_my_messages_escapes_context(client, random_password, new_user):
     password = random_password()
     user = new_user(password=password)
-    user.send_message(ALERT_MESSAGE, is_system=True, context={"area": "<script>x</script>", "kinds": "a"})
+    user.send_message(SEASON_NEWS_MESSAGE, is_system=True, context={"title": "<script>x</script>", "lines": "a"})
     assert client.login(username=user.username, password=password)
 
     text = client.get(reverse("api:users-me-messages")).json()[0]["text"]

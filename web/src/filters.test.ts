@@ -1,9 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { FruitMarker, Kind } from "./api.ts";
 import {
-  CZECHIA_BBOX,
   NO_FILTERS,
-  clampToCzechia,
   countByKind,
   isFiltered,
   kindTiles,
@@ -41,19 +39,5 @@ describe("map filters", () => {
     const counts = countByKind(markers);
     expect(kindTiles(kinds, counts).map((kind) => kind.key)).toEqual(["a1", "b2"]);
     expect(kindTiles(kinds, counts, "svest").map((kind) => kind.key)).toEqual(["b2"]);
-  });
-});
-
-describe("watched area", () => {
-  test("a view of central Europe is limited to the Czech Republic", () => {
-    expect(clampToCzechia([5, 45, 25, 55])).toEqual(CZECHIA_BBOX);
-  });
-
-  test("a view inside the Czech Republic stays as it is", () => {
-    expect(clampToCzechia([14.3, 50.0, 14.6, 50.2])).toEqual([14.3, 50.0, 14.6, 50.2]);
-  });
-
-  test("a view outside the Czech Republic has no area", () => {
-    expect(clampToCzechia([2, 48, 3, 49])).toBeNull();
   });
 });

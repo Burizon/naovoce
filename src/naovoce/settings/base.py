@@ -132,6 +132,7 @@ INSTALLED_APPS = (
     "newsletter",
     "naovoce",
     "herbarium",
+    "harvest",
     # external apps
     "modeltranslation",
     "corsheaders",

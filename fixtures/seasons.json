@@ -1,0 +1,839 @@
+[
+  {
+    "model": "herbarium.herbarium",
+    "pk": 1,
+    "fields": {
+      "kind": 1,
+      "full_name": "Jabloň",
+      "full_name_cs": "Jabloň",
+      "full_name_en": "Apple Tree",
+      "latin_name": "Malus domestica",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 1,
+    "fields": {
+      "herb": 1,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 4
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 2,
+    "fields": {
+      "kind": 2,
+      "full_name": "Hrušeň",
+      "full_name_cs": "Hrušeň",
+      "full_name_en": "Pear Tree",
+      "latin_name": "Pyrus communis",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 2,
+    "fields": {
+      "herb": 2,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 4
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 3,
+    "fields": {
+      "kind": 3,
+      "full_name": "Třešeň",
+      "full_name_cs": "Třešeň",
+      "full_name_en": "Cherry Tree",
+      "latin_name": "Prunus avium",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 3,
+    "fields": {
+      "herb": 3,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 4,
+    "fields": {
+      "kind": 4,
+      "full_name": "Višeň",
+      "full_name_cs": "Višeň",
+      "full_name_en": "Sour Cherry",
+      "latin_name": "Prunus cerasus",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 4,
+    "fields": {
+      "herb": 4,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 5,
+    "fields": {
+      "kind": 5,
+      "full_name": "Mirabelka",
+      "full_name_cs": "Mirabelka",
+      "full_name_en": "Yellow Plum",
+      "latin_name": "Prunus domestica subsp. syriaca",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 5,
+    "fields": {
+      "herb": 5,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 1
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 6,
+    "fields": {
+      "kind": 6,
+      "full_name": "Švestka",
+      "full_name_cs": "Švestka",
+      "full_name_en": "Plum Tree",
+      "latin_name": "Prunus domestica",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 6,
+    "fields": {
+      "herb": 6,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 7,
+    "fields": {
+      "kind": 7,
+      "full_name": "Meruňka",
+      "full_name_cs": "Meruňka",
+      "full_name_en": "Apricot Tree",
+      "latin_name": "Prunus armeniaca",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 7,
+    "fields": {
+      "herb": 7,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 1
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 8,
+    "fields": {
+      "kind": 8,
+      "full_name": "Kdouloň",
+      "full_name_cs": "Kdouloň",
+      "full_name_en": "Quince",
+      "latin_name": "Cydonia oblonga",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 8,
+    "fields": {
+      "herb": 8,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 10,
+      "duration": 1
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 9,
+    "fields": {
+      "kind": 9,
+      "full_name": "Ostružiník",
+      "full_name_cs": "Ostružiník",
+      "full_name_en": "Blackberry",
+      "latin_name": "Rubus fruticosus agg.",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 9,
+    "fields": {
+      "herb": 9,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 3
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 10,
+    "fields": {
+      "kind": 10,
+      "full_name": "Maliník",
+      "full_name_cs": "Maliník",
+      "full_name_en": "Raspberry",
+      "latin_name": "Rubus idaeus",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 10,
+    "fields": {
+      "herb": 10,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 11,
+    "fields": {
+      "kind": 11,
+      "full_name": "Bez černý",
+      "full_name_cs": "Bez černý",
+      "full_name_en": "Elderberry",
+      "latin_name": "Sambucus nigra",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 11,
+    "fields": {
+      "herb": 11,
+      "part": "květy",
+      "part_cs": "květy",
+      "part_en": "flowers",
+      "start": 5,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 12,
+    "fields": {
+      "herb": 11,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 13,
+    "fields": {
+      "kind": 13,
+      "full_name": "Šípková růže",
+      "full_name_cs": "Šípková růže",
+      "full_name_en": "Wild Rose",
+      "latin_name": "Rosa canina",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 13,
+    "fields": {
+      "herb": 13,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 9,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 14,
+    "fields": {
+      "kind": 14,
+      "full_name": "Borůvka",
+      "full_name_cs": "Borůvka",
+      "full_name_en": "Bilberry",
+      "latin_name": "Vaccinium myrtillus",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 14,
+    "fields": {
+      "herb": 14,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 15,
+    "fields": {
+      "kind": 15,
+      "full_name": "Rakytník",
+      "full_name_cs": "Rakytník",
+      "full_name_en": "Sea Buckthorn",
+      "latin_name": "Hippophae rhamnoides",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 15,
+    "fields": {
+      "herb": 15,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 16,
+    "fields": {
+      "kind": 16,
+      "full_name": "Trnka",
+      "full_name_cs": "Trnka",
+      "full_name_en": "Blackthorn",
+      "latin_name": "Prunus spinosa",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 16,
+    "fields": {
+      "herb": 16,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 10,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 17,
+    "fields": {
+      "kind": 17,
+      "full_name": "Hloh",
+      "full_name_cs": "Hloh",
+      "full_name_en": "Hawthorn",
+      "latin_name": "Crataegus spp.",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 17,
+    "fields": {
+      "herb": 17,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 9,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 19,
+    "fields": {
+      "kind": 19,
+      "full_name": "Máta",
+      "full_name_cs": "Máta",
+      "full_name_en": "Mint",
+      "latin_name": "Mentha spp.",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 18,
+    "fields": {
+      "herb": 19,
+      "part": "listy",
+      "part_cs": "listy",
+      "part_en": "leaves",
+      "start": 5,
+      "duration": 5
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 20,
+    "fields": {
+      "kind": 20,
+      "full_name": "Meduňka",
+      "full_name_cs": "Meduňka",
+      "full_name_en": "Lemon Balm",
+      "latin_name": "Melissa officinalis",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 19,
+    "fields": {
+      "herb": 20,
+      "part": "listy",
+      "part_cs": "listy",
+      "part_en": "leaves",
+      "start": 5,
+      "duration": 4
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 21,
+    "fields": {
+      "kind": 21,
+      "full_name": "Líska",
+      "full_name_cs": "Líska",
+      "full_name_en": "Hazel Tree",
+      "latin_name": "Corylus avellana",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 20,
+    "fields": {
+      "herb": 21,
+      "part": "ořechy",
+      "part_cs": "ořechy",
+      "part_en": "nuts",
+      "start": 8,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 22,
+    "fields": {
+      "kind": 22,
+      "full_name": "Ořešák",
+      "full_name_cs": "Ořešák",
+      "full_name_en": "Walnut Tree",
+      "latin_name": "Juglans regia",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 21,
+    "fields": {
+      "herb": 22,
+      "part": "ořechy",
+      "part_cs": "ořechy",
+      "part_en": "nuts",
+      "start": 9,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 23,
+    "fields": {
+      "kind": 23,
+      "full_name": "Kaštan jedlý",
+      "full_name_cs": "Kaštan jedlý",
+      "full_name_en": "Chestnut Tree",
+      "latin_name": "Castanea sativa",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 22,
+    "fields": {
+      "herb": 23,
+      "part": "ořechy",
+      "part_cs": "ořechy",
+      "part_en": "nuts",
+      "start": 9,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 24,
+    "fields": {
+      "kind": 24,
+      "full_name": "Rybíz (Meruzalka)",
+      "full_name_cs": "Rybíz (Meruzalka)",
+      "full_name_en": "Ribes",
+      "latin_name": "Ribes spp.",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 23,
+    "fields": {
+      "herb": 24,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 26,
+    "fields": {
+      "kind": 26,
+      "full_name": "Morušovník",
+      "full_name_cs": "Morušovník",
+      "full_name_en": "Mulberry Tree",
+      "latin_name": "Morus spp.",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 24,
+    "fields": {
+      "herb": 26,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 27,
+    "fields": {
+      "kind": 27,
+      "full_name": "Jahodník",
+      "full_name_cs": "Jahodník",
+      "full_name_en": "Wild Strawberry",
+      "latin_name": "Fragaria vesca",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 25,
+    "fields": {
+      "herb": 27,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 29,
+    "fields": {
+      "kind": 29,
+      "full_name": "Dřín",
+      "full_name_cs": "Dřín",
+      "full_name_en": "Cornel",
+      "latin_name": "Cornus mas",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 26,
+    "fields": {
+      "herb": 29,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 30,
+    "fields": {
+      "kind": 30,
+      "full_name": "Arónie",
+      "full_name_cs": "Arónie",
+      "full_name_en": "Chokeberry",
+      "latin_name": "Aronia melanocarpa",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 27,
+    "fields": {
+      "herb": 30,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 9,
+      "duration": 3
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 31,
+    "fields": {
+      "kind": 31,
+      "full_name": "Mišpule",
+      "full_name_cs": "Mišpule",
+      "full_name_en": "Medlar",
+      "latin_name": "Mespilus germanica",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 28,
+    "fields": {
+      "herb": 31,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 11,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 32,
+    "fields": {
+      "kind": 32,
+      "full_name": "Oskeruše",
+      "full_name_cs": "Oskeruše",
+      "full_name_en": "Service Tree",
+      "latin_name": "Sorbus domestica",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 29,
+    "fields": {
+      "herb": 32,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 4
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 33,
+    "fields": {
+      "kind": 33,
+      "full_name": "Jeřáb",
+      "full_name_cs": "Jeřáb",
+      "full_name_en": "Rowan",
+      "latin_name": "Sorbus aucuparia",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 30,
+    "fields": {
+      "herb": 33,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 8,
+      "duration": 3
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 34,
+    "fields": {
+      "kind": 34,
+      "full_name": "Mandloň",
+      "full_name_cs": "Mandloň",
+      "full_name_en": "Almond tree",
+      "latin_name": "Prunus dulcis",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 31,
+    "fields": {
+      "herb": 34,
+      "part": "ořechy",
+      "part_cs": "ořechy",
+      "part_en": "nuts",
+      "start": 9,
+      "duration": 1
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 35,
+    "fields": {
+      "kind": 35,
+      "full_name": "Angrešt",
+      "full_name_cs": "Angrešt",
+      "full_name_en": "Gooseberry",
+      "latin_name": "Ribes uva-crispa",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 32,
+    "fields": {
+      "herb": 35,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 6,
+      "duration": 2
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 36,
+    "fields": {
+      "kind": 36,
+      "full_name": "Broskvoň",
+      "full_name_cs": "Broskvoň",
+      "full_name_en": "Peach Tree",
+      "latin_name": "Prunus persica",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 33,
+    "fields": {
+      "herb": 36,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 7,
+      "duration": 3
+    }
+  },
+  {
+    "model": "herbarium.herbarium",
+    "pk": 37,
+    "fields": {
+      "kind": 37,
+      "full_name": "Hlošina",
+      "full_name_cs": "Hlošina",
+      "full_name_en": "Silverberry",
+      "latin_name": "Elaeagnus angustifolia",
+      "description": "",
+      "photo": ""
+    }
+  },
+  {
+    "model": "herbarium.season",
+    "pk": 34,
+    "fields": {
+      "herb": 37,
+      "part": "plody",
+      "part_cs": "plody",
+      "part_en": "fruit",
+      "start": 9,
+      "duration": 2
+    }
+  }
+]

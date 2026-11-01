@@ -16,6 +16,8 @@ def api_root(request, format=None):  # noqa:A002
         {
             "fruit": reverse("api:fruit-list", request=request, format=format),
             "herbarium": reverse("api:herbarium-list", request=request, format=format),
+            "harvest-calendar": reverse("api:harvest-calendar", request=request, format=format),
+            "harvest-alerts": reverse("api:harvest-alert-list", request=request, format=format),
             "kinds": reverse("api:kinds-list", request=request, format=format),
             "users": reverse("api:users-list", request=request, format=format),
         }
